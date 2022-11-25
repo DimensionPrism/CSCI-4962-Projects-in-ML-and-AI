@@ -1,3 +1,5 @@
 *.vscode
 datasets/
 *.ckpt
+*.zip
+*.gz
