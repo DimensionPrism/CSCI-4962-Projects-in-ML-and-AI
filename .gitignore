@@ -3,3 +3,5 @@ datasets/
 *.ckpt
 *.zip
 *.gz
+*.pyc
+*.pt

@@ -1,0 +1,1 @@
+python train_yolov5.py --img 416 --batch 64 --epochs 20 --data ./datasets/data.yaml --weights yolov5s.pt --cache
