@@ -8,8 +8,8 @@ from src.multi_models.resnet.model import resnet, EmotionClassifier
 processed_fer2013 = preprocess_fer2013('./datasets/FER2013/fer2013_1.csv')
 resnet50 = resnet('./model_results/resnet_weights/resnet50_scratch_weight.pkl')
 
-cnn_classifier = EmotionClassifier(model=resnet50, processed_fer2013=processed_fer2013, batch_size=64)
-cnn_trainer = pl.Trainer(
+emotion_classifier = EmotionClassifier(model=resnet50, processed_fer2013=processed_fer2013, batch_size=64)
+trainer = pl.Trainer(
     logger=pl_loggers.CSVLogger(
         save_dir='./model_results/resnet_runs/'
     ),
@@ -24,4 +24,5 @@ cnn_trainer = pl.Trainer(
     gpus=1,
     max_epochs=50,
 )
-cnn_trainer.fit(cnn_classifier)
+trainer.fit(emotion_classifier)
+trainer.test(emotion_classifier)

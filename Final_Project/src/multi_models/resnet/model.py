@@ -8,7 +8,6 @@ import pytorch_lightning as pl
 from torchvision import transforms
 
 from torchvision import models
-from torchmetrics import Accuracy
 from torch.utils.data import DataLoader
 from src.multi_models.resnet.dataset import FER2013
 
@@ -56,7 +55,7 @@ class EmotionClassifier(pl.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         images, labels = batch
-        
+
         output = self.model(images)
         
         val_loss = self.criterion(output, labels)
@@ -90,6 +89,22 @@ class EmotionClassifier(pl.LightningModule):
         
         result = {'test_loss': test_loss, 'corrects': corrects, 'num_labels': preds.shape[0]}
         return result
+    
+    def inference(self, input):
+        emotions = {
+            0:"Angry",
+            1:"Disgust",
+            2:"Fear",
+            3:"Happy",
+            4:"Sad",
+            5:"Surprize",
+            6:"Neutral"
+        }
+        transform = transforms.Normalize(mean=0, std = 255)
+        input = torch.from_numpy(input)[None, None, :, :].float()
+        input = transform(input)
+        prediction = emotions[self.model(input).argmax(dim=1).item()]
+        return prediction
 
     def test_epoch_end(self, outputs) -> None:
         test_losses = [output['test_loss'].item() for output in outputs]
@@ -117,7 +132,9 @@ def resnet(weights_path):
     with open(weights_path, 'rb') as f:
         obj = f.read()
         weights = {key: torch.from_numpy(arr) for key, arr in pickle.loads(obj, encoding='latin1').items()}
-    resnet50 = models.resnet50(weights=weights)
+    resnet50 = models.resnet50()
+    resnet50.fc = nn.Linear(in_features=2048, out_features=8631, bias=True)
+    resnet50.load_state_dict(weights)
 
     resnet50.conv1 = nn.Conv2d(1, 64, kernel_size = 3, padding=1, bias=False)
     resnet50.maxpool = nn.Sequential()

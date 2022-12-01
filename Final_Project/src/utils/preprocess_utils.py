@@ -147,3 +147,36 @@ def preprocess_fer2013(csv_path):
     
     print("FER2013 processed!")
     return processed_fer2013
+
+def merge_yolo(dataset_root, yolo_root):
+    dataset_types = ['train', 'valid']
+
+    for dataset_type in dataset_types:
+        label_roots = join(dataset_root, f"{dataset_type}/labels")
+        label_filenames = listdir(label_roots)
+        for n in tqdm(range(len(label_filenames))):
+            label_filename = label_filenames[n]
+            prefix = label_filename.split(".txt")[0]
+            label_dstpath = join(yolo_root, f"labels/{dataset_type}/{label_filename}")
+            
+            image_filepath = join(dataset_root, f"{dataset_type}/images/{prefix}.jpg")
+            image_dstpath = join(yolo_root, f"images/{dataset_type}/{prefix}.jpg")
+            if not exists(image_filepath):
+                image_filepath = join(dataset_root, f"{dataset_type}/images/{prefix}.png")
+                image_dstpath = join(yolo_root, f"images/{dataset_type}/{prefix}.png")
+            if dataset_type == 'valid':
+                image_dstpath = image_dstpath.replace('valid/', 'val/')
+                label_dstpath = label_dstpath.replace('valid/', 'val/')
+            copy(image_filepath, image_dstpath)
+
+            annots = open(join(label_roots, label_filename))
+            lines = annots.readlines()
+            f = open(label_dstpath, 'w')
+            for index, line in enumerate(lines):
+                if line[0] == '2':
+                    f.write(line.replace('2', '0', 1))
+                elif line[0] == '0':
+                    f.write(line.replace('0', '2', 1))
+                else:
+                    f.write(line)
+            f.close()
