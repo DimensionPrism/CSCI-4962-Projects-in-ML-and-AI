@@ -5,3 +5,5 @@ datasets/
 *.gz
 *.pyc
 *.pt
+*.ipynb_checkpoints
+model_results/

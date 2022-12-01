@@ -1,1 +1,1 @@
-python train_yolov5.py --img 416 --batch 64 --epochs 20 --data ./datasets/data.yaml --weights yolov5s.pt --cache
+python train_yolov5.py --img 512 --batch 48 --epochs 10 --data ./datasets/yolo/meta.yaml --weights ./model_results/yolo_weights/yolov5s.pt --project ./model_results/yolo_runs
