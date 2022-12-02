@@ -1,1 +1,2 @@
+python preprocess_yolo.py
 python train_yolov5.py --img 512 --batch 48 --epochs 20 --data ./datasets/yolo/meta.yaml --weights ./model_results/yolo_weights/yolov5s.pt --project ./model_results/yolo_runs

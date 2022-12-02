@@ -7,3 +7,6 @@ datasets/
 *.pt
 *.ipynb_checkpoints
 model_results/
+prediction/
+Final_Project/*.jpg
+runs/
