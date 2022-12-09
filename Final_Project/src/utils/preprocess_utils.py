@@ -148,7 +148,7 @@ def preprocess_fer2013(csv_path):
     print("FER2013 processed!")
     return processed_fer2013
 
-def merge_yolo(dataset_root, yolo_root):
+def merge_yolo(dataset_root, yolo_root, label_swap=None):
     dataset_types = ['train', 'valid']
 
     for dataset_type in dataset_types:
@@ -173,10 +173,10 @@ def merge_yolo(dataset_root, yolo_root):
             lines = annots.readlines()
             f = open(label_dstpath, 'w')
             for index, line in enumerate(lines):
-                if line[0] == '2':
-                    f.write(line.replace('2', '0', 1))
-                elif line[0] == '0':
-                    f.write(line.replace('0', '2', 1))
+                if line[0] == label_swap['face']:
+                    f.write(line.replace(label_swap['face'], label_swap['other'], 1))
+                elif line[0] == label_swap['other']:
+                    f.write(line.replace(label_swap['other'], label_swap['face'], 1))
                 else:
                     f.write(line)
             f.close()

@@ -1,6 +1,7 @@
 import os
 import cv2
 import torch
+import argparse
 import pytorch_lightning as pl
 
 from os.path import join, exists
@@ -8,20 +9,28 @@ from torchvision import transforms
 from src.utils.ckpt_utils import load_yolov5
 from src.multi_models.resnet.model import resnet, EmotionClassifier
 
+def config():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--image', type=str, default='./50542022061314543049_jpg.rf.930d26055dc6e3ddd1ce3603fbd7da3e.jpg', help='image path for inference')
+    parser.add_argument('--yolo_ckpt_path', type=str, default="./model_results/yolo_runs/exp/weights/best.pt", help='yolov5 ckpt path')
+    parser.add_argument('--yolo_path', type=str, default="./src/multi_models/yolov5", help='local yolo repo path')
+    parser.add_argument('--ec_ckpt_path', type=str, default='./model_results/resnet_runs/fer2013_val_accuracy=0.697.ckpt', help='emotion classifier ckpt path')
+    return parser.parse_args()
+
 
 if __name__ == "__main__":
-    image_path ='./50542022061312531643_jpg.rf.95ca30ce06d200674df48643305336c3.jpg'
-    image_prefix = image_path.split(".jpg")[0].split("/")[-1]
+    cfg = config()
+    image_prefix = cfg.image.split(".jpg")[0].split("/")[-1]
     prediction_root = join("./prediction", image_prefix)
     os.makedirs(prediction_root, exist_ok=True)
 
-    image = cv2.imread(image_path)
+    image = cv2.imread(cfg.image)
     cv2.imwrite(join(prediction_root, f'./sample.jpg'), image)
 
 
-    yolov5 = load_yolov5(ckpt_path="./model_results/yolo_runs/exp/weights/best.pt", yolov5_path="./src/multi_models/yolov5")
-    yolov5.conf = 0.5
-    yolov5_results = yolov5(image_path)
+    yolov5 = load_yolov5(ckpt_path=cfg.yolo_ckpt_path, yolov5_path=cfg.yolo_path)
+    yolov5.conf = 0.6
+    yolov5_results = yolov5(cfg.image)
     cropped_root = join(prediction_root, 'cropped')
     os.makedirs(cropped_root, exist_ok=True)
     faces = []
@@ -42,7 +51,7 @@ if __name__ == "__main__":
         f.writelines(f"Smartphone detected!\n")
 
     resnet50 = resnet('./model_results/resnet_weights/resnet50_scratch_weight.pkl')
-    emotion_classifier = EmotionClassifier.load_from_checkpoint(checkpoint_path='./model_results/resnet_runs/fer2013_val_accuracy=0.697.ckpt', model=resnet50, processed_fer2013=None)
+    emotion_classifier = EmotionClassifier.load_from_checkpoint(checkpoint_path=cfg.ec_ckpt_path, model=resnet50, processed_fer2013=None)
     pred_emotions = []
     for face in faces:
         gray_face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
